@@ -192,6 +192,21 @@ jobs:
           "
           cat toolchain.json
 
+      - name: Commit and Push Updated toolchain.json to Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add toolchain.json
+          if ! git diff --cached --quiet; then
+            ver="${{ github.event.inputs.version || github.ref_name }}"
+            git commit -m "chore(release): sync toolchain.json with release hashes for ${ver} [skip ci]"
+            git fetch origin main
+            git rebase origin/main || true
+            git push origin HEAD:main
+          else
+            echo "toolchain.json is already up to date with repository."
+          fi
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:

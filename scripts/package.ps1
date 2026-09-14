@@ -144,8 +144,13 @@ Write-Host "[6/6] Updating toolchain.json manifest..." -ForegroundColor Yellow
 $ManifestFile = Join-Path $RepoRoot "toolchain.json"
 if (Test-Path $ManifestFile) {
     $json = Get-Content $ManifestFile -Raw | ConvertFrom-Json
-    $json.archive.sha256 = $Sha256
-    $json.archive.compressed_size_mb = [math]::Ceiling($ZipMb)
+    if ($json.platforms -and $json.platforms.'x86_64-pc-windows-gnu') {
+        $json.platforms.'x86_64-pc-windows-gnu'.archive.sha256 = $Sha256
+        $json.platforms.'x86_64-pc-windows-gnu'.archive.compressed_size_mb = [int][math]::Ceiling($ZipMb)
+    } elseif ($json.archive) {
+        $json.archive.sha256 = $Sha256
+        $json.archive.compressed_size_mb = [int][math]::Ceiling($ZipMb)
+    }
     $json.version = $Version
     $json | ConvertTo-Json -Depth 10 | Set-Content -Path $ManifestFile -Encoding UTF8
 }

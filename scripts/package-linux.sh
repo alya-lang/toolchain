@@ -36,7 +36,12 @@ fi
 UPSTREAM_TGZ="$TEMP_DIR/upstream.tgz"
 
 echo "[1/5] Downloading upstream static musl toolchain for $TRIPLE..."
-curl -fsSL "$UPSTREAM_URL" -o "$UPSTREAM_TGZ"
+# Enforce IPv4 (-4) to avoid Azure/GitHub Actions runner IPv6 blackholing on musl.cc AAAA record
+if ! curl -4 -fsSL --connect-timeout 20 --retry 3 --retry-delay 2 "$UPSTREAM_URL" -o "$UPSTREAM_TGZ"; then
+    echo "HTTPS download failed, attempting HTTP fallback..."
+    HTTP_URL="http://musl.cc/${TRIPLE}-native.tgz"
+    curl -4 -fsSL --connect-timeout 20 --retry 3 --retry-delay 2 "$HTTP_URL" -o "$UPSTREAM_TGZ"
+fi
 
 echo "[2/5] Extracting archive..."
 tar -xzf "$UPSTREAM_TGZ" -C "$TEMP_DIR"

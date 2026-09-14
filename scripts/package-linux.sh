@@ -21,13 +21,14 @@ echo "  Target Architecture: $ARCH (Static musl-GCC)"
 echo "============================================================"
 
 # Upstream static musl toolchains from GitHub Releases (bazel-contrib/musl-toolchain, 100% reliable)
-if [ "$ARCH" = "x86_64" ]; then
+if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "x64" ]; then
+    ARCH="x64"
     UPSTREAM_URL="https://github.com/bazel-contrib/musl-toolchain/releases/download/v0.1.27/musl-1.2.3-platform-x86_64-unknown-linux-gnu-target-x86_64-linux-musl.tar.gz"
     TRIPLE="x86_64-linux-musl"
 elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+    ARCH="arm64"
     UPSTREAM_URL="https://github.com/bazel-contrib/musl-toolchain/releases/download/v0.1.27/musl-1.2.3-platform-aarch64-unknown-linux-gnu-target-aarch64-linux-musl.tar.gz"
     TRIPLE="aarch64-linux-musl"
-    ARCH="arm64"
 else
     echo "Unsupported architecture: $ARCH (supported: x86_64, aarch64)"
     exit 1

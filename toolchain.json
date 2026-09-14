@@ -2,35 +2,110 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "alya-toolchain",
   "version": "1.0.0",
-  "description": "Minimal, portable C and GNU Assembler toolchain for the Alya programming language",
-  "target": "x86_64-pc-windows-gnu",
-  "archive": {
-    "filename": "alya-toolchain-windows-x64.zip",
-    "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-x64.zip",
-    "sha256": "4a54cc7d45c9018b2e40c568f1a287995892835451191f6082a109578dbcc0c5",
-    "compressed_size_mb": 54.0
+  "description": "Multi-platform minimal C and GNU Assembler toolchain suite for the Alya programming language",
+  "platforms": {
+    "x86_64-pc-windows-gnu": {
+      "os": "windows",
+      "arch": "x86_64",
+      "archive": {
+        "filename": "alya-toolchain-windows-x64.zip",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-x64.zip",
+        "sha256": "4a54cc7d45c9018b2e40c568f1a287995892835451191f6082a109578dbcc0c5",
+        "compressed_size_mb": 54
+      },
+      "binaries": {
+        "gcc": "bin/gcc.exe",
+        "as": "bin/as.exe",
+        "ld": "bin/ld.exe"
+      },
+      "bundled_libraries": [
+        "kernel32",
+        "ws2_32",
+        "msvcrt",
+        "user32",
+        "shell32",
+        "advapi32",
+        "m"
+      ]
+    },
+    "x86_64-unknown-linux-musl": {
+      "os": "linux",
+      "arch": "x86_64",
+      "archive": {
+        "filename": "alya-toolchain-linux-x64.tar.gz",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-x64.tar.gz",
+        "sha256": "PENDING_RELEASE",
+        "compressed_size_mb": 18
+      },
+      "binaries": {
+        "gcc": "bin/gcc",
+        "as": "bin/as",
+        "ld": "bin/ld"
+      },
+      "bundled_libraries": [
+        "c",
+        "m",
+        "pthread",
+        "dl"
+      ]
+    },
+    "aarch64-unknown-linux-musl": {
+      "os": "linux",
+      "arch": "aarch64",
+      "archive": {
+        "filename": "alya-toolchain-linux-arm64.tar.gz",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-arm64.tar.gz",
+        "sha256": "PENDING_RELEASE",
+        "compressed_size_mb": 18
+      },
+      "binaries": {
+        "gcc": "bin/gcc",
+        "as": "bin/as",
+        "ld": "bin/ld"
+      },
+      "bundled_libraries": [
+        "c",
+        "m",
+        "pthread",
+        "dl"
+      ]
+    },
+    "aarch64-apple-darwin": {
+      "os": "macos",
+      "arch": "aarch64",
+      "archive": {
+        "filename": "alya-toolchain-macos-arm64.tar.gz",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-macos-arm64.tar.gz",
+        "sha256": "PENDING_RELEASE",
+        "compressed_size_mb": 24
+      },
+      "binaries": {
+        "clang": "bin/clang",
+        "ld": "bin/ld64.lld"
+      },
+      "bundled_libraries": [
+        "System"
+      ]
+    },
+    "x86_64-apple-darwin": {
+      "os": "macos",
+      "arch": "x86_64",
+      "archive": {
+        "filename": "alya-toolchain-macos-x64.tar.gz",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-macos-x64.tar.gz",
+        "sha256": "PENDING_RELEASE",
+        "compressed_size_mb": 24
+      },
+      "binaries": {
+        "clang": "bin/clang",
+        "ld": "bin/ld64.lld"
+      },
+      "bundled_libraries": [
+        "System"
+      ]
+    }
   },
-  "binaries": {
-    "gcc": "bin/gcc.exe",
-    "as": "bin/as.exe",
-    "ld": "bin/ld.exe"
-  },
-  "supported_subsystems": [
-    "console",
-    "windows"
-  ],
-  "bundled_libraries": [
-    "kernel32",
-    "ws2_32",
-    "msvcrt",
-    "user32",
-    "shell32",
-    "advapi32",
-    "m"
-  ],
   "compatibility": {
-    "min_alyac_version": "0.0.5",
-    "os": "windows",
-    "arch": "x86_64"
+    "min_alyac_version": "0.0.5"
   }
 }

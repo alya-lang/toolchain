@@ -1,4 +1,4 @@
-name: Build & Release Minimal Toolchain
+name: Build & Release Multi-Platform Toolchain
 
 on:
   push:
@@ -15,37 +15,107 @@ permissions:
   contents: write
 
 jobs:
-  build-windows-x64:
+  build-windows:
+    name: Windows x64
     runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Curate Minimal Toolchain
+      - name: Build Windows Minimal Toolchain
         shell: pwsh
         run: |
           $ver = if ("${{ github.ref_name }}" -match '^v?(.*)$') { $Matches[1] } else { "${{ github.event.inputs.version }}" }
           ./scripts/package.ps1 -Version $ver
 
-      - name: Verify Toolchain Integrity & Assembly Execution
+      - name: Verify Toolchain
         shell: pwsh
         run: |
           ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x64.zip
 
-      - name: Upload Build Artifacts
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: alya-toolchain-windows-x64
-          path: |
-            dist/alya-toolchain-windows-x64.zip
-            toolchain.json
+          path: dist/alya-toolchain-windows-x64.zip
 
-      - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+  build-linux:
+    name: Linux (x64 & ARM64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Linux x64 Toolchain
+        run: |
+          chmod +x scripts/package-linux.sh
+          ./scripts/package-linux.sh x86_64 "${{ github.ref_name || github.event.inputs.version }}"
+
+      - name: Build Linux ARM64 Toolchain
+        run: |
+          ./scripts/package-linux.sh aarch64 "${{ github.ref_name || github.event.inputs.version }}"
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alya-toolchain-linux
+          path: |
+            dist/alya-toolchain-linux-x64.tar.gz
+            dist/alya-toolchain-linux-arm64.tar.gz
+
+  build-macos:
+    name: macOS (Apple Silicon & Intel)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build macOS ARM64 Toolchain
+        run: |
+          chmod +x scripts/package-macos.sh
+          ./scripts/package-macos.sh arm64 "${{ github.ref_name || github.event.inputs.version }}"
+
+      - name: Build macOS x64 Toolchain
+        run: |
+          ./scripts/package-macos.sh x64 "${{ github.ref_name || github.event.inputs.version }}"
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alya-toolchain-macos
+          path: |
+            dist/alya-toolchain-macos-arm64.tar.gz
+            dist/alya-toolchain-macos-x64.tar.gz
+
+  release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten Artifact Directory
+        run: |
+          mkdir -p dist
+          find artifacts -type f -exec mv {} dist/ \;
+          ls -la dist/
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/alya-toolchain-windows-x64.zip
+            dist/alya-toolchain-linux-x64.tar.gz
+            dist/alya-toolchain-linux-arm64.tar.gz
+            dist/alya-toolchain-macos-arm64.tar.gz
+            dist/alya-toolchain-macos-x64.tar.gz
             toolchain.json
           draft: false
           prerelease: false

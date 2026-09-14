@@ -65,7 +65,7 @@ jobs:
           tar -xzf dist/alya-toolchain-linux-x64.tar.gz -C temp_verify_x64
           ./temp_verify_x64/bin/gcc --version
           echo 'int main() { return 0; }' > test.c
-          ./temp_verify_x64/bin/gcc test.c -o test_bin
+          ./temp_verify_x64/bin/gcc -static test.c -o test_bin
           ./test_bin
           rm -rf test.c test_bin temp_verify_x64
 

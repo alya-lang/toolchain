@@ -1,0 +1,19 @@
+# Build and distribution artifacts
+dist/
+build/
+temp/
+*.zip
+*.7z
+*.tar.gz
+
+# Test artifacts
+test_output/
+*.exe
+*.o
+*.obj
+*.s
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini

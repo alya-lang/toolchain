@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "alya-toolchain",
+  "version": "1.0.0",
+  "description": "Minimal, portable C and GNU Assembler toolchain for the Alya programming language",
+  "target": "x86_64-pc-windows-gnu",
+  "archive": {
+    "filename": "alya-toolchain-windows-x64.zip",
+    "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-x64.zip",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressed_size_mb": 18
+  },
+  "binaries": {
+    "gcc": "bin/gcc.exe",
+    "as": "bin/as.exe",
+    "ld": "bin/ld.exe"
+  },
+  "supported_subsystems": [
+    "console",
+    "windows"
+  ],
+  "bundled_libraries": [
+    "kernel32",
+    "ws2_32",
+    "msvcrt",
+    "user32",
+    "shell32",
+    "advapi32",
+    "m"
+  ],
+  "compatibility": {
+    "min_alyac_version": "0.0.5",
+    "os": "windows",
+    "arch": "x86_64"
+  }
+}

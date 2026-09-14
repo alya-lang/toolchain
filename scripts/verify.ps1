@@ -59,16 +59,15 @@ Write-Host "  Version string:    $GccVersionOut" -ForegroundColor Gray
 Write-Host "[2/4] Testing GNU Assembly compilation (Alya assembly simulator)..." -ForegroundColor Yellow
 
 $AsmSource = @"
-    .intel_syntax noprefix
     .text
     .globl main
     .def main; .scl 2; .type 32; .endef
 main:
-    sub rsp, 40
-    lea rcx, [msg]
+    subq `$40, %rsp
+    leaq msg(%rip), %rcx
     call puts
-    xor eax, eax
-    add rsp, 40
+    xorl %eax, %eax
+    addq `$40, %rsp
     ret
 
     .data

@@ -1,12 +1,12 @@
 # ==============================================================================
 # Alya Minimal Toolchain Packaging Script
-# Curates an ultra-lightweight MinGW-w64 C & GNU Assembler distribution (~18 MB)
+# Curates an ultra-lightweight MinGW-w64 C & GNU Assembler distribution
 # ==============================================================================
 
 [CmdletBinding()]
 param(
     [string]$Version = "1.0.0",
-    [string]$W64DevkitVersion = "2.1.0",
+    [string]$W64DevkitVersion = "2.10.0",
     [string]$OutputDir = "dist",
     [switch]$SkipDownload,
     [switch]$KeepTemp
@@ -17,6 +17,7 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 $DistPath = Join-Path $RepoRoot $OutputDir
+$CacheDir = Join-Path $RepoRoot "cache"
 $TempPath = Join-Path $RepoRoot "temp_packaging"
 $ArchiveName = "alya-toolchain-windows-x64.zip"
 $OutputZip = Join-Path $DistPath $ArchiveName
@@ -30,23 +31,26 @@ if (Test-Path $TempPath) {
     Remove-Item -Recurse -Force $TempPath
 }
 New-Item -ItemType Directory -Force -Path $DistPath | Out-Null
+New-Item -ItemType Directory -Force -Path $CacheDir | Out-Null
 New-Item -ItemType Directory -Force -Path $TempPath | Out-Null
 
-$UpstreamZipUrl = "https://github.com/skeeto/w64devkit/releases/download/v$W64DevkitVersion/w64devkit-x64-$W64DevkitVersion.zip"
-$DownloadedZip = Join-Path $TempPath "upstream_w64devkit.zip"
+$UpstreamExeUrl = "https://github.com/skeeto/w64devkit/releases/download/v$W64DevkitVersion/w64devkit-x64-$W64DevkitVersion.7z.exe"
+$DownloadedExe = Join-Path $CacheDir "w64devkit.7z.exe"
 
-if (-not $SkipDownload -or -not (Test-Path $DownloadedZip)) {
+if (-not $SkipDownload -and -not (Test-Path $DownloadedExe)) {
     Write-Host "[1/6] Downloading upstream w64devkit v$W64DevkitVersion..." -ForegroundColor Yellow
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $UpstreamZipUrl -OutFile $DownloadedZip -UseBasicParsing
+    Invoke-WebRequest -Uri $UpstreamExeUrl -OutFile $DownloadedExe -UseBasicParsing
     Write-Host "  Downloaded successfully." -ForegroundColor Green
 } else {
-    Write-Host "[1/6] Using existing upstream archive..." -ForegroundColor Yellow
+    Write-Host "[1/6] Using cached upstream archive ($DownloadedExe)..." -ForegroundColor Yellow
 }
 
-Write-Host "[2/6] Extracting upstream archive..." -ForegroundColor Yellow
+Write-Host "[2/6] Extracting upstream archive using tar.exe..." -ForegroundColor Yellow
 $ExtractStage = Join-Path $TempPath "extracted"
-Expand-Archive -Path $DownloadedZip -DestinationPath $ExtractStage -Force
+New-Item -ItemType Directory -Force -Path $ExtractStage | Out-Null
+
+tar.exe -xf $DownloadedExe -C $ExtractStage
 
 $SourceRoot = Join-Path $ExtractStage "w64devkit"
 if (-not (Test-Path $SourceRoot)) {
@@ -58,6 +62,7 @@ $StagingDir = Join-Path $TempPath "alya-toolchain"
 New-Item -ItemType Directory -Force -Path $StagingDir | Out-Null
 
 # 1. Essential binaries
+Write-Host "  Copying core binaries (bin)..." -ForegroundColor Gray
 $BinTarget = Join-Path $StagingDir "bin"
 New-Item -ItemType Directory -Force -Path $BinTarget | Out-Null
 
@@ -78,66 +83,44 @@ foreach ($bin in $EssentialBins) {
     }
 }
 
-# Ensure as.exe exists (fallback to x86_64-w64-mingw32-as.exe if needed)
-if (-not (Test-Path (Join-Path $BinTarget "as.exe"))) {
-    $archAs = Join-Path $SourceRoot "bin\x86_64-w64-mingw32-as.exe"
-    if (Test-Path $archAs) {
-        Copy-Item $archAs (Join-Path $BinTarget "as.exe")
-    }
-}
-
 # 2. GCC Compiler internals (cc1.exe)
 Write-Host "  Copying GCC compiler internals (libexec)..." -ForegroundColor Gray
 $LibExecSrc = Join-Path $SourceRoot "libexec"
 if (Test-Path $LibExecSrc) {
     Copy-Item -Recurse $LibExecSrc $StagingDir
     
-    # Remove C++ compiler internal (cc1plus.exe) to save ~35 MB
+    # Remove C++ compiler internals and LTO to save ~50 MB
     Get-ChildItem -Path (Join-Path $StagingDir "libexec") -Recurse -Filter "cc1plus.exe" | Remove-Item -Force
     Get-ChildItem -Path (Join-Path $StagingDir "libexec") -Recurse -Filter "lto1.exe" | Remove-Item -Force
     Get-ChildItem -Path (Join-Path $StagingDir "libexec") -Recurse -Filter "lto-dump.exe" | Remove-Item -Force
+    Get-ChildItem -Path (Join-Path $StagingDir "libexec") -Recurse -Filter "f951.exe" | Remove-Item -Force
 }
 
-# 3. GCC specs and core compiler libraries (lib/gcc)
-Write-Host "  Copying GCC libraries (lib/gcc)..." -ForegroundColor Gray
-$LibGccSrc = Join-Path $SourceRoot "lib\gcc"
-if (Test-Path $LibGccSrc) {
-    $LibGccDest = Join-Path $StagingDir "lib\gcc"
-    New-Item -ItemType Directory -Force -Path (Join-Path $StagingDir "lib") | Out-Null
-    Copy-Item -Recurse $LibGccSrc (Join-Path $StagingDir "lib")
-
-    # Remove C++ static libraries to save space
-    Get-ChildItem -Path $LibGccDest -Recurse -Include "libstdc++.a", "libsupc++.a", "libgfortran.a" | Remove-Item -Force
-}
-
-# 4. Target CRT, Headers, and Win32 Import Libraries (x86_64-w64-mingw32)
-Write-Host "  Copying Win32 CRT, headers and import libraries..." -ForegroundColor Gray
-$TargetDirSrc = Join-Path $SourceRoot "x86_64-w64-mingw32"
-if (Test-Path $TargetDirSrc) {
-    $TargetDirDest = Join-Path $StagingDir "x86_64-w64-mingw32"
-    New-Item -ItemType Directory -Force -Path $TargetDirDest | Out-Null
+# 3. Target CRT, static libraries, and GCC specs (lib)
+Write-Host "  Copying Win32 CRT and core libraries (lib)..." -ForegroundColor Gray
+$LibSrc = Join-Path $SourceRoot "lib"
+if (Test-Path $LibSrc) {
+    Copy-Item -Recurse $LibSrc $StagingDir
     
-    # Copy headers (required for C amalgamation/FFI compiling)
-    $IncSrc = Join-Path $TargetDirSrc "include"
-    if (Test-Path $IncSrc) {
-        Copy-Item -Recurse $IncSrc $TargetDirDest
-        # Remove C++ headers
-        $CppInc = Join-Path $TargetDirDest "include\c++"
-        if (Test-Path $CppInc) {
-            Remove-Item -Recurse -Force $CppInc
-        }
-    }
+    $StagingLib = Join-Path $StagingDir "lib"
+    # Remove C++ and Fortran static libraries to save space
+    Get-ChildItem -Path $StagingLib -Recurse -Include "libstdc++*.a", "libsupc++*.a", "libgfortran*.a" | Remove-Item -Force
+}
 
-    # Copy import libraries
-    $LibSrc = Join-Path $TargetDirSrc "lib"
-    if (Test-Path $LibSrc) {
-        Copy-Item -Recurse $LibSrc $TargetDirDest
-        # Remove C++ import libraries
-        Get-ChildItem -Path (Join-Path $TargetDirDest "lib") -Recurse -Include "libstdc++*.a", "libgfortran*.a" | Remove-Item -Force
+# 4. Standard C & Win32 headers (include)
+Write-Host "  Copying standard C and Win32 headers (include)..." -ForegroundColor Gray
+$IncSrc = Join-Path $SourceRoot "include"
+if (Test-Path $IncSrc) {
+    Copy-Item -Recurse $IncSrc $StagingDir
+    
+    # Remove C++ headers to save ~30 MB
+    $CppInc = Join-Path $StagingDir "include\c++"
+    if (Test-Path $CppInc) {
+        Remove-Item -Recurse -Force $CppInc
     }
 }
 
-Write-Host "[4/6] Stripping debug symbols to minimize size..." -ForegroundColor Yellow
+Write-Host "[4/6] Stripping debug symbols from executables..." -ForegroundColor Yellow
 $StripExe = Join-Path $BinTarget "strip.exe"
 if (Test-Path $StripExe) {
     Get-ChildItem -Path $StagingDir -Recurse -Filter "*.exe" | ForEach-Object {

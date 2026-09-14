@@ -75,21 +75,21 @@ fi
 
 # 4. Target runtime libraries and specs (lib)
 if [ -d "$SOURCE_ROOT/lib" ]; then
-    cp -r "$SOURCE_ROOT/lib"/* "$STAGING_DIR/lib/"
+    cp -r "$SOURCE_ROOT/lib/." "$STAGING_DIR/lib/" 2>/dev/null || true
     find "$STAGING_DIR/lib" -name "libstdc++*.a" -delete || true
     find "$STAGING_DIR/lib" -name "libgfortran*.a" -delete || true
 fi
 
 # 5. Standard C headers (include)
 if [ -d "$SOURCE_ROOT/include" ]; then
-    cp -r "$SOURCE_ROOT/include"/* "$STAGING_DIR/include/"
+    cp -r "$SOURCE_ROOT/include/." "$STAGING_DIR/include/" 2>/dev/null || true
     rm -rf "$STAGING_DIR/include/c++" || true
 fi
 if [ -d "$SOURCE_ROOT/$TRIPLE/include" ]; then
-    cp -r "$SOURCE_ROOT/$TRIPLE/include"/* "$STAGING_DIR/include/" 2>/dev/null || true
+    cp -r "$SOURCE_ROOT/$TRIPLE/include/." "$STAGING_DIR/include/" 2>/dev/null || true
 fi
 if [ -d "$SOURCE_ROOT/$TRIPLE/lib" ]; then
-    cp -r "$SOURCE_ROOT/$TRIPLE/lib"/* "$STAGING_DIR/lib/" 2>/dev/null || true
+    cp -r "$SOURCE_ROOT/$TRIPLE/lib/." "$STAGING_DIR/lib/" 2>/dev/null || true
 fi
 
 echo "[4/5] Stripping debug symbols from binaries..."

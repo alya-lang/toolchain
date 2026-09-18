@@ -8,7 +8,7 @@ Official ultra-lightweight, zero-friction C, Clang, and GNU Assembler toolchain 
 
 Alya compiles directly to native GNU/Mach-O assembly and links with native OS runtime libraries (`ws2_32`, `kernel32`, `libc`, `libm`, `libpthread`, Darwin `libSystem.B.dylib`, C FFI, and embedded SQLite3).
 
-Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require hundreds of megabytes or manual system configuration. This repository provides an automated packaging pipeline that builds and verifies **ultra-compact, portable toolchain archives (~16–24 MB)** tailored specifically for the `alyac` compiler across all major platforms.
+Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require hundreds of megabytes or manual system configuration. This repository provides an automated packaging pipeline that builds and verifies **ultra-compact, portable toolchain archives (~16–24 MB)** tailored specifically for the `alya` compiler across all major platforms.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐

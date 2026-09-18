@@ -216,7 +216,7 @@ jobs:
           notes += "- **Windows x64**: Curated ultra-lightweight MinGW-w64 distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, `strip.exe`, `objdump.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, `user32`, `shell32`, `advapi32`).\\n"
           notes += "- **Linux x64 & ARM64**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies.\\n"
           notes += "- **macOS (Apple Silicon & Intel)**: Mach-O Clang driver and tool suite with ad-hoc codesigning to comply with macOS Gatekeeper / AMFI runtime security.\\n"
-          notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alyac` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\\n\\n"
+          notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alya` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\\n\\n"
           notes += "### 🔒 Verification\\n"
           notes += "All archives are validated with SHA-256 checksums documented in `SHA256SUMS.txt` and `toolchain.json`.\\n"
 

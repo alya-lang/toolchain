@@ -94,7 +94,7 @@ if [ -d "$SOURCE_ROOT/$TRIPLE/lib" ]; then
 fi
 
 echo "[4/5] Stripping debug symbols from binaries..."
-if [ "$ARCH" = "x86_64" ] && [ -f "$STAGING_DIR/bin/strip" ]; then
+if [ "$ARCH" = "x64" ] && [ -f "$STAGING_DIR/bin/strip" ]; then
     find "$STAGING_DIR/bin" -type f -exec "$STAGING_DIR/bin/strip" --strip-unneeded {} + 2>/dev/null || true
 fi
 

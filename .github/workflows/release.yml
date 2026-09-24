@@ -134,6 +134,47 @@ jobs:
             dist/alya-toolchain-linux-x64.tar.gz
             dist/alya-toolchain-linux-arm64.tar.gz
 
+  verify-linux-arm64:
+    name: Verify Linux ARM64 (native)
+    needs: [build-linux]
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: alya-toolchain-linux
+          path: artifacts
+
+      - name: Verify Linux ARM64 Toolchain
+        run: |
+          mkdir -p toolchain
+          tar -xzf artifacts/alya-toolchain-linux-arm64.tar.gz -C toolchain
+          ./toolchain/bin/gcc --version
+          echo 'int main() { return 0; }' > test.c
+          ./toolchain/bin/gcc -static test.c -o test_bin
+          ./test_bin
+          cat > test_asm.s <<'EOF'
+              .text
+              .globl main
+              .type main, %function
+          main:
+              stp x29, x30, [sp, #-16]!
+              mov x29, sp
+              adrp x0, msg
+              add x0, x0, :lo12:msg
+              bl puts
+              mov w0, #0
+              ldp x29, x30, [sp], #16
+              ret
+
+              .data
+          msg:
+              .string "SUCCESS: Alya Linux ARM64 Assembly"
+          EOF
+          ./toolchain/bin/gcc -static test_asm.s -o test_asm
+          ./test_asm | grep -q "SUCCESS"
+          rm -rf test.c test_bin test_asm.s test_asm toolchain artifacts
+
   build-macos:
     name: macOS (Apple Silicon & Intel)
     runs-on: macos-latest
@@ -177,7 +218,7 @@ jobs:
 
   release:
     name: Publish Multi-Platform Release
-    needs: [build-windows, build-windows-arm64, build-windows-x86, build-linux, build-macos]
+    needs: [build-windows, build-windows-arm64, build-windows-x86, build-linux, verify-linux-arm64, build-macos]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:

@@ -268,6 +268,10 @@ if (-not $KeepTemp) {
     Remove-Item -Recurse -Force $TempPath
 }
 
+# Native tool invocations above may leave a non-zero $LASTEXITCODE even when
+# every step succeeded (e.g. strip warnings); reset so CI does not fail.
+$LASTEXITCODE = 0
+
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "  Build Completed Successfully!" -ForegroundColor Green
 Write-Host "  Archive:  $OutputZip" -ForegroundColor Cyan

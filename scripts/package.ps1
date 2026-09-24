@@ -58,7 +58,7 @@ if ($Arch -eq "x64" -or $Arch -eq "x86") {
     $UpstreamExeUrl = "https://github.com/skeeto/w64devkit/releases/download/v$W64DevkitVersion/w64devkit-$W64Arch-$W64DevkitVersion.7z.exe"
     $DownloadedExe = Join-Path $CacheDir "w64devkit-$W64Arch.7z.exe"
 } else {
-    $UpstreamExeUrl = "https://github.com/mstorsjo/llvm-mingw/releases/download/llvm-mingw-$LlvmMingwVersion/llvm-mingw-$LlvmMingwVersion-ucrt-aarch64.zip"
+    $UpstreamExeUrl = "https://github.com/mstorsjo/llvm-mingw/releases/download/$LlvmMingwVersion/llvm-mingw-$LlvmMingwVersion-ucrt-aarch64.zip"
     $DownloadedExe = Join-Path $CacheDir "llvm-mingw-ucrt-aarch64.zip"
 }
 

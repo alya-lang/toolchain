@@ -356,28 +356,28 @@ jobs:
               'x86_64-apple-darwin': ('**macOS**', 'Intel (x64)', '`x86_64-apple-darwin`'),
           }
 
-          notes = f"## Alya Minimal Toolchain Suite v{ver}\\n\\n"
-          notes += "Minimal, zero-setup, multi-platform C compiler and GNU Assembler distribution suite for the [Alya Programming Language](https://github.com/alya-lang/alya).\\n\\n"
-          notes += "### 📦 Release Assets & Platform Targets\\n\\n"
-          notes += "| Platform | Architecture | Target Triple | Archive | Size |\\n"
-          notes += "| :--- | :--- | :--- | :--- | :---: |\\n"
+          notes = f"## Alya Minimal Toolchain Suite v{ver}\n\n"
+          notes += "Minimal, zero-setup, multi-platform C compiler and GNU Assembler distribution suite for the [Alya Programming Language](https://github.com/alya-lang/alya).\n\n"
+          notes += "### 📦 Release Assets & Platform Targets\n\n"
+          notes += "| Platform | Architecture | Target Triple | Archive | Size |\n"
+          notes += "| :--- | :--- | :--- | :--- | :---: |\n"
 
           for platform, (os_name, arch_name, triple) in platform_labels.items():
               if platform in manifest['platforms']:
                   p = manifest['platforms'][platform]['archive']
                   fname = p['filename']
                   size = p.get('compressed_size_mb', '-')
-                  notes += f"| {os_name} | {arch_name} | {triple} | `{fname}` | {size} MB |\\n"
+                  notes += f"| {os_name} | {arch_name} | {triple} | `{fname}` | {size} MB |\n"
 
-          notes += "\\n### 🚀 Key Features\\n\\n"
-          notes += "- **Windows x64**: Curated ultra-lightweight MinGW-w64 distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, `strip.exe`, `objdump.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, `user32`, `shell32`, `advapi32`).\\n"
-          notes += "- **Windows ARM64**: LLVM-MinGW distribution for Windows on ARM64 with `gcc`/`clang` drivers, `as`, `ar`, `windres`, LLD linker, UCRT headers, and ARM64 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\\n"
-          notes += "- **Windows x86**: Curated ultra-lightweight MinGW-w64 32-bit distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\\n"
-          notes += "- **Linux x64 & ARM64**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies.\\n"
-          notes += "- **macOS (Apple Silicon & Intel)**: Mach-O Clang driver and tool suite with ad-hoc codesigning to comply with macOS Gatekeeper / AMFI runtime security.\\n"
-          notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alya` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\\n\\n"
-          notes += "### 🔒 Verification\\n"
-          notes += "All archives are validated with SHA-256 checksums documented in `SHA256SUMS.txt` and `toolchain.json`.\\n"
+          notes += "\n### 🚀 Key Features\n\n"
+          notes += "- **Windows x64**: Curated ultra-lightweight MinGW-w64 distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, `strip.exe`, `objdump.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, `user32`, `shell32`, `advapi32`).\n"
+          notes += "- **Windows ARM64**: LLVM-MinGW distribution for Windows on ARM64 with `gcc`/`clang` drivers, `as`, `ar`, `windres`, LLD linker, UCRT headers, and ARM64 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\n"
+          notes += "- **Windows x86**: Curated ultra-lightweight MinGW-w64 32-bit distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\n"
+          notes += "- **Linux x64 & ARM64**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies.\n"
+          notes += "- **macOS (Apple Silicon & Intel)**: Mach-O Clang driver and tool suite with ad-hoc codesigning to comply with macOS Gatekeeper / AMFI runtime security.\n"
+          notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alya` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\n\n"
+          notes += "### 🔒 Verification\n"
+          notes += "All archives are validated with SHA-256 checksums documented in `SHA256SUMS.txt` and `toolchain.json`.\n"
 
           with open('RELEASE_NOTES.md', 'w') as f:
               f.write(notes)

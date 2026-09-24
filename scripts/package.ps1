@@ -161,6 +161,13 @@ if ($Arch -ne "arm64") {
     $TargetPrefix = "aarch64-w64-mingw32"
     $UpstreamBin = Join-Path $SourceRoot "bin"
 
+    # Clang major version (drives both the resource dir and the versioned
+    # clang driver the prefixed gcc/clang wrappers exec, e.g. clang-23).
+    $ClangVerDir = Get-ChildItem -Path (Join-Path $SourceRoot "lib\clang") -Directory | Sort-Object Name -Descending | Select-Object -First 1
+    if (-not $ClangVerDir) {
+        throw "Upstream Clang resource directory missing under lib\clang"
+    }
+
     # 1. Canonical driver binaries (alya probes bin\gcc.exe, then clang.exe)
     Write-Host "  Copying canonical driver binaries (bin)..." -ForegroundColor Gray
     $BinTarget = Join-Path $StagingDir "bin"
@@ -192,6 +199,13 @@ if ($Arch -ne "arm64") {
         throw "Required upstream binary missing: ld.lld.exe"
     }
     Copy-Item $LdLld $BinTarget
+    # The prefixed gcc/clang wrappers exec a versioned clang driver
+    # (clang-N) from their own directory; stage it under its upstream name.
+    $VersionedClang = Join-Path $UpstreamBin "clang-$($ClangVerDir.Name).exe"
+    if (-not (Test-Path $VersionedClang)) {
+        throw "Required upstream binary missing: clang-$($ClangVerDir.Name).exe"
+    }
+    Copy-Item $VersionedClang $BinTarget
     Copy-Item (Join-Path $UpstreamBin "*.cfg") $BinTarget
     Get-ChildItem -Path $UpstreamBin -Filter "*.dll" | Copy-Item -Destination $BinTarget
 
@@ -212,13 +226,7 @@ if ($Arch -ne "arm64") {
     Copy-Item -Recurse $IncSrc $StagingDir
 
     # 4. Clang resource dir: builtin headers + aarch64 runtime libraries.
-    # The major version is discovered dynamically to survive upstream bumps.
     Write-Host "  Copying Clang resource dir (builtins)..." -ForegroundColor Gray
-    $ClangBase = Join-Path $SourceRoot "lib\clang"
-    $ClangVerDir = Get-ChildItem -Path $ClangBase -Directory | Sort-Object Name -Descending | Select-Object -First 1
-    if (-not $ClangVerDir) {
-        throw "Upstream Clang resource directory missing under lib\clang"
-    }
     $ClangStaging = Join-Path $StagingDir "lib\clang\$($ClangVerDir.Name)"
     New-Item -ItemType Directory -Force -Path (Join-Path $ClangStaging "include") | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $ClangStaging "lib\windows") | Out-Null

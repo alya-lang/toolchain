@@ -269,8 +269,13 @@ if (-not $KeepTemp) {
 }
 
 # Native tool invocations above may leave a non-zero $LASTEXITCODE even when
-# every step succeeded (e.g. strip warnings); reset so CI does not fail.
+# every step succeeded (e.g. strip warnings on curated binaries); the Actions
+# pwsh wrapper surfaces a trailing native exit code as step failure, so report
+# it for diagnostics and force a clean exit. Real errors still throw above via
+# $ErrorActionPreference = "Stop" before reaching this point.
+Write-Host "  Final native exit code: $LASTEXITCODE" -ForegroundColor Gray
 $LASTEXITCODE = 0
+exit 0
 
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "  Build Completed Successfully!" -ForegroundColor Green

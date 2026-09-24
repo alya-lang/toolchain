@@ -9,7 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$Version = "1.0.0",
-    [ValidateSet("x64", "arm64")]
+    [ValidateSet("x64", "arm64", "x86")]
     [string]$Arch = "x64",
     [string]$W64DevkitVersion = "2.10.0",
     [string]$LlvmMingwVersion = "20260922",
@@ -30,6 +30,10 @@ if ($Arch -eq "x64") {
     $ArchiveName = "alya-toolchain-windows-x64.zip"
     $TargetLabel = "Windows x64 (MinGW-w64 Minimal Distribution)"
     $ManifestKey = "x86_64-pc-windows-gnu"
+} elseif ($Arch -eq "x86") {
+    $ArchiveName = "alya-toolchain-windows-x86.zip"
+    $TargetLabel = "Windows x86 (MinGW-w64 Minimal Distribution)"
+    $ManifestKey = "i686-pc-windows-gnu"
 } else {
     $ArchiveName = "alya-toolchain-windows-arm64.zip"
     $TargetLabel = "Windows ARM64 (LLVM-MinGW Distribution)"
@@ -49,9 +53,10 @@ New-Item -ItemType Directory -Force -Path $DistPath | Out-Null
 New-Item -ItemType Directory -Force -Path $CacheDir | Out-Null
 New-Item -ItemType Directory -Force -Path $TempPath | Out-Null
 
-if ($Arch -eq "x64") {
-    $UpstreamExeUrl = "https://github.com/skeeto/w64devkit/releases/download/v$W64DevkitVersion/w64devkit-x64-$W64DevkitVersion.7z.exe"
-    $DownloadedExe = Join-Path $CacheDir "w64devkit.7z.exe"
+if ($Arch -eq "x64" -or $Arch -eq "x86") {
+    $W64Arch = if ($Arch -eq "x86") { "x86" } else { "x64" }
+    $UpstreamExeUrl = "https://github.com/skeeto/w64devkit/releases/download/v$W64DevkitVersion/w64devkit-$W64Arch-$W64DevkitVersion.7z.exe"
+    $DownloadedExe = Join-Path $CacheDir "w64devkit-$W64Arch.7z.exe"
 } else {
     $UpstreamExeUrl = "https://github.com/mstorsjo/llvm-mingw/releases/download/llvm-mingw-$LlvmMingwVersion/llvm-mingw-$LlvmMingwVersion-ucrt-aarch64.zip"
     $DownloadedExe = Join-Path $CacheDir "llvm-mingw-ucrt-aarch64.zip"
@@ -71,7 +76,7 @@ Write-Host "[2/6] Extracting upstream archive..." -ForegroundColor Yellow
 $ExtractStage = Join-Path $TempPath "extracted"
 New-Item -ItemType Directory -Force -Path $ExtractStage | Out-Null
 
-if ($Arch -eq "x64") {
+if ($Arch -ne "arm64") {
     tar.exe -xf $DownloadedExe -C $ExtractStage
 
     $SourceRoot = Join-Path $ExtractStage "w64devkit"
@@ -91,7 +96,7 @@ Write-Host "[3/6] Curating minimal toolchain components..." -ForegroundColor Yel
 $StagingDir = Join-Path $TempPath "alya-toolchain"
 New-Item -ItemType Directory -Force -Path $StagingDir | Out-Null
 
-if ($Arch -eq "x64") {
+if ($Arch -ne "arm64") {
     # 1. Essential binaries
     Write-Host "  Copying core binaries (bin)..." -ForegroundColor Gray
     $BinTarget = Join-Path $StagingDir "bin"

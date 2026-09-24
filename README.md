@@ -15,7 +15,8 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 │                    ALYA MULTI-PLATFORM TOOLCHAIN MATRIX                     │
 ├───────────────────┬────────────────────┬────────────────────────────────────┤
 │ Windows (x64)     │ MinGW-w64 Minimal  │ gcc.exe, as.exe, ld.exe, ws2_32    │
-│ Windows (ARM64)   │ LLVM-MinGW (UCRT)  │ gcc/clang, as, ar, LLD, ws2_32    │
+│ Windows (ARM64)   │ LLVM-MinGW (UCRT)  │ gcc/clang, as, ar, LLD, ws2_32     │
+│ Windows (x86)     │ MinGW-w64 Minimal  │ gcc.exe, as.exe, ld.exe (32-bit)   │
 │ Linux (x64)       │ Universal musl-GCC │ Static gcc, as, ld (no glibc lock) │
 │ Linux (ARM64)     │ Universal musl-GCC │ Static aarch64 gcc, as, ld         │
 │ macOS (Apple Sil) │ Darwin Clang + LLD │ Mach-O clang, ld64.lld, codesign   │
@@ -31,6 +32,7 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 | :--- | :--- | :--- | :--- | :--- |
 | **`x86_64-pc-windows-gnu`** | Windows x64 | `.zip` | ~18 MB | `scripts/package.ps1` |
 | **`aarch64-pc-windows-gnu`** | Windows ARM64 | `.zip` | ~TBD MB | `scripts/package.ps1 -Arch arm64` |
+| **`i686-pc-windows-gnu`** | Windows x86 (32-bit) | `.zip` | ~TBD MB | `scripts/package.ps1 -Arch x86` |
 | **`x86_64-unknown-linux-musl`** | Linux x64 | `.tar.gz` | ~16 MB | `scripts/package-linux.sh x86_64` |
 | **`aarch64-unknown-linux-musl`**| Linux ARM64 | `.tar.gz` | ~16 MB | `scripts/package-linux.sh aarch64` |
 | **`aarch64-apple-darwin`** | macOS Apple Silicon | `.tar.gz` | ~24 MB | `scripts/package-macos.sh arm64` |
@@ -60,6 +62,12 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 ```powershell
 ./scripts/package.ps1 -Version 1.0.0 -Arch arm64
 ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-arm64.zip -Arch arm64
+```
+
+### Windows x86 (32-bit; verifies via WOW64 on 64-bit runners)
+```powershell
+./scripts/package.ps1 -Version 1.0.0 -Arch x86
+./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x86.zip -Arch x86
 ```
 
 ### Linux (x64 / ARM64)

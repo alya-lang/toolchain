@@ -6,7 +6,7 @@
 [CmdletBinding()]
 param(
     [string]$ToolchainPath = "dist/alya-toolchain-windows-x64.zip",
-    [ValidateSet("x64", "arm64")]
+    [ValidateSet("x64", "arm64", "x86")]
     [string]$Arch = "x64",
     [switch]$KeepTemp
 )
@@ -76,6 +76,25 @@ main:
     .data
 msg:
     .string "SUCCESS: Alya Assembly Native Execution"
+"@
+} elseif ($Arch -eq "x86") {
+$AsmSource = @"
+    .text
+    .globl _main
+    .def _main; .scl 2; .type 32; .endef
+_main:
+    pushl %ebp
+    movl %esp, %ebp
+    pushl `$msg
+    call _puts
+    addl `$4, %esp
+    xorl %eax, %eax
+    popl %ebp
+    ret
+
+    .data
+msg:
+    .string "SUCCESS: Alya Assembly Native Execution (x86)"
 "@
 } else {
 $AsmSource = @"

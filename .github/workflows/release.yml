@@ -66,6 +66,30 @@ jobs:
           name: alya-toolchain-windows-arm64
           path: dist/alya-toolchain-windows-arm64.zip
 
+  build-windows-x86:
+    name: Windows x86
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Windows x86 Toolchain
+        shell: pwsh
+        run: |
+          $ver = if ("${{ github.ref_name }}" -match '^v?([0-9]+\.[0-9]+\.[0-9]+.*)$') { $Matches[1] } else { "${{ github.event.inputs.version || '1.0.0' }}" }
+          ./scripts/package.ps1 -Version $ver -Arch x86
+
+      - name: Verify Windows x86 Toolchain
+        shell: pwsh
+        run: |
+          ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x86.zip -Arch x86
+
+      - name: Upload Windows x86 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alya-toolchain-windows-x86
+          path: dist/alya-toolchain-windows-x86.zip
+
   build-linux:
     name: Linux (x64 & ARM64)
     runs-on: ubuntu-latest
@@ -153,7 +177,7 @@ jobs:
 
   release:
     name: Publish Multi-Platform Release
-    needs: [build-windows, build-windows-arm64, build-linux, build-macos]
+    needs: [build-windows, build-windows-arm64, build-windows-x86, build-linux, build-macos]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
@@ -195,6 +219,7 @@ jobs:
           file_map = {
               'x86_64-pc-windows-gnu': 'alya-toolchain-windows-x64.zip',
               'aarch64-pc-windows-gnu': 'alya-toolchain-windows-arm64.zip',
+              'i686-pc-windows-gnu': 'alya-toolchain-windows-x86.zip',
               'x86_64-unknown-linux-musl': 'alya-toolchain-linux-x64.tar.gz',
               'aarch64-unknown-linux-musl': 'alya-toolchain-linux-arm64.tar.gz',
               'aarch64-apple-darwin': 'alya-toolchain-macos-arm64.tar.gz',
@@ -219,6 +244,7 @@ jobs:
           platform_labels = {
               'x86_64-pc-windows-gnu': ('**Windows**', 'x86_64 (x64)', '`x86_64-pc-windows-gnu`'),
               'aarch64-pc-windows-gnu': ('**Windows**', 'AArch64 (ARM64)', '`aarch64-pc-windows-gnu`'),
+              'i686-pc-windows-gnu': ('**Windows**', 'x86 (32-bit)', '`i686-pc-windows-gnu`'),
               'x86_64-unknown-linux-musl': ('**Linux**', 'x86_64 (x64)', '`x86_64-unknown-linux-musl`'),
               'aarch64-unknown-linux-musl': ('**Linux**', 'AArch64 (ARM64)', '`aarch64-unknown-linux-musl`'),
               'aarch64-apple-darwin': ('**macOS**', 'Apple Silicon (ARM64)', '`aarch64-apple-darwin`'),
@@ -241,6 +267,7 @@ jobs:
           notes += "\\n### 🚀 Key Features\\n\\n"
           notes += "- **Windows x64**: Curated ultra-lightweight MinGW-w64 distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, `strip.exe`, `objdump.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, `user32`, `shell32`, `advapi32`).\\n"
           notes += "- **Windows ARM64**: LLVM-MinGW distribution for Windows on ARM64 with `gcc`/`clang` drivers, `as`, `ar`, `windres`, LLD linker, UCRT headers, and ARM64 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\\n"
+          notes += "- **Windows x86**: Curated ultra-lightweight MinGW-w64 32-bit distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\\n"
           notes += "- **Linux x64 & ARM64**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies.\\n"
           notes += "- **macOS (Apple Silicon & Intel)**: Mach-O Clang driver and tool suite with ad-hoc codesigning to comply with macOS Gatekeeper / AMFI runtime security.\\n"
           notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alya` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\\n\\n"
@@ -277,6 +304,7 @@ jobs:
           files: |
             dist/alya-toolchain-windows-x64.zip
             dist/alya-toolchain-windows-arm64.zip
+            dist/alya-toolchain-windows-x86.zip
             dist/alya-toolchain-linux-x64.tar.gz
             dist/alya-toolchain-linux-arm64.tar.gz
             dist/alya-toolchain-macos-arm64.tar.gz

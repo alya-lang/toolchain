@@ -8,7 +8,7 @@ Official ultra-lightweight, zero-friction C, Clang, and GNU Assembler toolchain 
 
 Alya compiles directly to native GNU/Mach-O assembly and links with native OS runtime libraries (`ws2_32`, `kernel32`, `libc`, `libm`, `libpthread`, Darwin `libSystem.B.dylib`, C FFI, and embedded SQLite3).
 
-Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require hundreds of megabytes or manual system configuration. This repository provides an automated packaging pipeline that builds and verifies **ultra-compact, portable toolchain archives (~16–24 MB)** tailored specifically for the `alya` compiler across all major platforms.
+Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require hundreds of megabytes or manual system configuration. This repository provides an automated packaging pipeline that builds and verifies **compact, portable toolchain archives (tens of MB, see matrix below)** tailored specifically for the `alya` compiler across all major platforms.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -30,20 +30,22 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 
 | Platform Target | Architecture | Archive Format | Size (Compressed) | Build Driver |
 | :--- | :--- | :--- | :--- | :--- |
-| **`x86_64-pc-windows-gnu`** | Windows x64 | `.zip` | ~18 MB | `scripts/package.ps1` |
-| **`aarch64-pc-windows-gnu`** | Windows ARM64 | `.zip` | ~TBD MB | `scripts/package.ps1 -Arch arm64` |
-| **`i686-pc-windows-gnu`** | Windows x86 (32-bit) | `.zip` | ~TBD MB | `scripts/package.ps1 -Arch x86` |
-| **`x86_64-unknown-linux-musl`** | Linux x64 | `.tar.gz` | ~16 MB | `scripts/package-linux.sh x86_64` |
-| **`aarch64-unknown-linux-musl`**| Linux ARM64 | `.tar.gz` | ~16 MB | `scripts/package-linux.sh aarch64` |
-| **`aarch64-apple-darwin`** | macOS Apple Silicon | `.tar.gz` | ~24 MB | `scripts/package-macos.sh arm64` |
-| **`x86_64-apple-darwin`** | macOS Intel x64 | `.tar.gz` | ~24 MB | `scripts/package-macos.sh x64` |
+| **`x86_64-pc-windows-gnu`** | Windows x64 | `.zip` | ~54 MB | `scripts/package.ps1` |
+| **`aarch64-pc-windows-gnu`** | Windows ARM64 | `.zip` | ~89 MB | `scripts/package.ps1 -Arch arm64` |
+| **`i686-pc-windows-gnu`** | Windows x86 (32-bit) | `.zip` | ~48 MB | `scripts/package.ps1 -Arch x86` |
+| **`x86_64-unknown-linux-musl`** | Linux x64 | `.tar.gz` | ~75 MB | `scripts/package-linux.sh x86_64` |
+| **`aarch64-unknown-linux-musl`**| Linux ARM64 | `.tar.gz` | ~68 MB | `scripts/package-linux.sh aarch64` |
+| **`aarch64-apple-darwin`** | macOS Apple Silicon | `.tar.gz` | ~131 MB | `scripts/package-macos.sh arm64` |
+| **`x86_64-apple-darwin`** | macOS Intel x64 | `.tar.gz` | ~139 MB | `scripts/package-macos.sh x64` |
 
 ---
 
 ## Features
 
-- 🪶 **Ultra-Compact**: Archives are strictly stripped down to essential compiler, assembler, linker, and CRT objects (averaging 16–24 MB).
+- 🪶 **Ultra-Compact**: Archives are strictly stripped down to essential compiler, assembler, linker, and CRT objects (see per-platform sizes in the matrix above).
 - ⚡ **Zero Configuration**: Portable and self-contained; operates seamlessly from `~/.alya/toolchain` without touching system `PATH`.
+- 🪟 **Windows on ARM64**: Windows ARM64 archive is an LLVM-MinGW (UCRT) distribution with `gcc`/`clang` drivers and LLD, verified natively on `windows-11-arm` runners.
+- ✅ **Natively Verified**: Every platform archive is compile- and run-tested on its own architecture in CI before release.
 - 🐧 **Universal Linux Binary**: Linux archives are 100% statically linked against musl libc, running out of the box on Ubuntu, Debian, Alpine, Arch, Fedora, and minimal container images.
 - 🍏 **Apple Silicon & Mach-O Ready**: macOS archives bundle Darwin Mach-O linkers with ad-hoc code-signing validation for Apple Silicon security requirements.
 - 🔒 **Cryptographically Verified**: All platform archives are recorded with exact SHA-256 checksums in [`toolchain.json`](toolchain.json).

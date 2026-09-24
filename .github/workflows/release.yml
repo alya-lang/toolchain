@@ -197,7 +197,31 @@ jobs:
           mkdir -p temp_verify_arm64
           tar -xzf dist/alya-toolchain-macos-arm64.tar.gz -C temp_verify_arm64
           ./temp_verify_arm64/bin/clang --version
-          rm -rf temp_verify_arm64
+          export SDKROOT=$(xcrun --show-sdk-path)
+          echo 'int main() { return 0; }' > test.c
+          ./temp_verify_arm64/bin/clang test.c -o test_bin
+          ./test_bin
+          cat > test_asm.s <<'EOF'
+              .text
+              .globl _main
+              .p2align 2
+          _main:
+              stp x29, x30, [sp, #-16]!
+              mov x29, sp
+              adrp x0, msg@PAGE
+              add x0, x0, msg@PAGEOFF
+              bl _puts
+              mov w0, #0
+              ldp x29, x30, [sp], #16
+              ret
+
+              .data
+          msg:
+              .asciz "SUCCESS: Alya macOS ARM64 Assembly"
+          EOF
+          ./temp_verify_arm64/bin/clang test_asm.s -o test_asm
+          ./test_asm | grep -q "SUCCESS"
+          rm -rf test.c test_bin test_asm.s test_asm temp_verify_arm64
 
       - name: Build macOS x64 Toolchain
         run: |
@@ -216,9 +240,49 @@ jobs:
             dist/alya-toolchain-macos-arm64.tar.gz
             dist/alya-toolchain-macos-x64.tar.gz
 
+  verify-macos-x64:
+    name: Verify macOS Intel (native)
+    needs: [build-macos]
+    runs-on: macos-15-intel
+    steps:
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: alya-toolchain-macos
+          path: artifacts
+
+      - name: Verify macOS x64 Toolchain
+        run: |
+          mkdir -p toolchain
+          tar -xzf artifacts/alya-toolchain-macos-x64.tar.gz -C toolchain
+          ./toolchain/bin/clang --version
+          export SDKROOT=$(xcrun --show-sdk-path)
+          echo 'int main() { return 0; }' > test.c
+          ./toolchain/bin/clang test.c -o test_bin
+          ./test_bin
+          cat > test_asm.s <<'EOF'
+              .text
+              .globl _main
+          _main:
+              pushq %rbp
+              movq %rsp, %rbp
+              leaq msg(%rip), %rdi
+              callq _puts
+              xorl %eax, %eax
+              popq %rbp
+              ret
+
+              .data
+          msg:
+              .asciz "SUCCESS: Alya macOS x64 Assembly"
+          EOF
+          ./toolchain/bin/clang test_asm.s -o test_asm
+          ./test_asm | grep -q "SUCCESS"
+          rm -rf test.c test_bin test_asm.s test_asm toolchain artifacts
+
   release:
     name: Publish Multi-Platform Release
-    needs: [build-windows, build-windows-arm64, build-windows-x86, build-linux, verify-linux-arm64, build-macos]
+    needs: [build-windows, build-windows-arm64, build-windows-x86, build-linux, verify-linux-arm64, build-macos, verify-macos-x64]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:

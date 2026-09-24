@@ -305,7 +305,7 @@ jobs:
 
       - name: Update toolchain.json Manifest with Exact Hashes
         run: |
-          python3 -c "
+          python3 <<'PYEOF'
           import json, hashlib, os
 
           with open('toolchain.json', 'r') as f:
@@ -381,7 +381,7 @@ jobs:
 
           with open('RELEASE_NOTES.md', 'w') as f:
               f.write(notes)
-          "
+          PYEOF
           cat toolchain.json
           cat RELEASE_NOTES.md
 

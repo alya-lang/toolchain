@@ -6,6 +6,8 @@
 [CmdletBinding()]
 param(
     [string]$ToolchainPath = "dist/alya-toolchain-windows-x64.zip",
+    [ValidateSet("x64", "arm64")]
+    [string]$Arch = "x64",
     [switch]$KeepTemp
 )
 
@@ -54,10 +56,11 @@ $GccVersionOut = & $GccExe --version | Select-Object -First 1
 Write-Host "  Version string:    $GccVersionOut" -ForegroundColor Gray
 
 # ------------------------------------------------------------------------------
-# Test 1: Native x64 Assembly linking (Alya Codegen simulation)
+# Test 1: Native Assembly linking (Alya Codegen simulation)
 # ------------------------------------------------------------------------------
-Write-Host "[2/4] Testing GNU Assembly compilation (Alya assembly simulator)..." -ForegroundColor Yellow
+Write-Host "[2/4] Testing Assembly compilation (Alya assembly simulator)..." -ForegroundColor Yellow
 
+if ($Arch -eq "x64") {
 $AsmSource = @"
     .text
     .globl main
@@ -74,6 +77,26 @@ main:
 msg:
     .string "SUCCESS: Alya Assembly Native Execution"
 "@
+} else {
+$AsmSource = @"
+    .text
+    .globl main
+    .def main; .scl 2; .type 32; .endef
+main:
+    stp x29, x30, [sp, #-16]!
+    mov x29, sp
+    adrp x0, msg
+    add x0, x0, :lo12:msg
+    bl puts
+    mov w0, #0
+    ldp x29, x30, [sp], #16
+    ret
+
+    .data
+msg:
+    .string "SUCCESS: Alya Assembly Native Execution (ARM64)"
+"@
+}
 
 $AsmFile = Join-Path $TempDir "test_asm.s"
 $AsmExe = Join-Path $TempDir "test_asm.exe"
@@ -88,7 +111,7 @@ $RunAsmOut = & $AsmExe
 if ($LASTEXITCODE -ne 0 -or $RunAsmOut -notmatch "SUCCESS") {
     throw "Assembly execution failed! Output: $RunAsmOut"
 }
-Write-Host "  ✓ GNU Assembly compiled and executed successfully!" -ForegroundColor Green
+Write-Host "  ✓ Assembly compiled and executed successfully!" -ForegroundColor Green
 
 # ------------------------------------------------------------------------------
 # Test 2: C + Winsock2 Linking (std/net & FFI simulation)

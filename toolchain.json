@@ -28,6 +28,31 @@
         "m"
       ]
     },
+    "aarch64-pc-windows-gnu": {
+      "os": "windows",
+      "arch": "aarch64",
+      "archive": {
+        "filename": "alya-toolchain-windows-arm64.zip",
+        "url": "https://github.com/alya-lang/toolchain/releases/latest/download/alya-toolchain-windows-arm64.zip",
+        "sha256": "pending-first-release",
+        "compressed_size_mb": 0
+      },
+      "binaries": {
+        "gcc": "bin/gcc.exe",
+        "clang": "bin/clang.exe",
+        "as": "bin/as.exe",
+        "ar": "bin/ar.exe"
+      },
+      "bundled_libraries": [
+        "kernel32",
+        "ws2_32",
+        "msvcrt",
+        "user32",
+        "shell32",
+        "advapi32",
+        "m"
+      ]
+    },
     "x86_64-unknown-linux-musl": {
       "os": "linux",
       "arch": "x86_64",

@@ -37,7 +37,7 @@ jobs:
           ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x64.zip
 
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alya-toolchain-windows-x64
           path: dist/alya-toolchain-windows-x64.zip
@@ -61,7 +61,7 @@ jobs:
           ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-arm64.zip -Arch arm64
 
       - name: Upload Windows ARM64 Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alya-toolchain-windows-arm64
           path: dist/alya-toolchain-windows-arm64.zip
@@ -85,7 +85,7 @@ jobs:
           ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x86.zip -Arch x86
 
       - name: Upload Windows x86 Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alya-toolchain-windows-x86
           path: dist/alya-toolchain-windows-x86.zip
@@ -127,7 +127,7 @@ jobs:
           ./scripts/package-linux.sh aarch64 "$RELEASE_VER"
 
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alya-toolchain-linux
           path: |
@@ -233,7 +233,7 @@ jobs:
           ./scripts/package-macos.sh x64 "$RELEASE_VER"
 
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alya-toolchain-macos
           path: |

@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Download Linux Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: alya-toolchain-linux
           path: artifacts
@@ -246,7 +246,7 @@ jobs:
     runs-on: macos-15-intel
     steps:
       - name: Download macOS Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: alya-toolchain-macos
           path: artifacts
@@ -290,7 +290,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 

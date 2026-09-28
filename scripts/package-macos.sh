@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Alya Minimal macOS Toolchain Packaging Script (Apple Silicon ARM64 & Intel x64)
-# Curates portable Clang/LLD Mach-O driver with ad-hoc codesign validation (~22 MB)
+# Curates portable Clang/LLD Mach-O driver with ad-hoc codesign validation (~80 MB)
 # ==============================================================================
 
 set -euo pipefail
@@ -60,11 +60,25 @@ if [ -d "$EXTRACTED_DIR/lib/clang" ]; then
     cp -r "$EXTRACTED_DIR/lib/clang" "$STAGING_DIR/lib/"
 fi
 
-# Ad-hoc codesign binaries so macOS Gatekeeper / AMFI permits execution
-codesign --force -s - "$STAGING_DIR/bin/clang" 2>/dev/null || true
-if [ -f "$STAGING_DIR/bin/ld64.lld" ]; then
-    codesign --force -s - "$STAGING_DIR/bin/ld64.lld" 2>/dev/null || true
+# Prune sanitizer/fuzzer/profiler runtimes: plain C links only need
+# libclang_rt.osx.a (0.7 MB); the ios/fuzzer/orc/ubsan/xray/asan/tsan
+# archives (~195 MB) are dead weight for the Alya compiler driver.
+if [ -d "$STAGING_DIR/lib/clang" ]; then
+    find "$STAGING_DIR/lib/clang" -path '*/lib/darwin/*' -type f ! -name 'libclang_rt.osx.a' -delete || true
+    rm -rf "$STAGING_DIR/lib/clang"/*/share || true
 fi
+
+# Strip staged binaries first (no-op if upstream already stripped),
+# then ad-hoc codesign everything so Gatekeeper / AMFI permits execution
+# (stripping invalidates signatures, hence this order).
+if [ -f "$STAGING_DIR/bin/strip" ]; then
+    for b in "$STAGING_DIR"/bin/*; do
+        "$STAGING_DIR/bin/strip" -S "$b" 2>/dev/null || true
+    done
+fi
+for b in "$STAGING_DIR"/bin/*; do
+    codesign --force -s - "$b" 2>/dev/null || true
+done
 
 ARCHIVE_NAME="alya-toolchain-macos-${ARCH}.tar.gz"
 OUTPUT_TAR="$DIST_DIR/$ARCHIVE_NAME"
@@ -73,7 +87,7 @@ echo "[4/4] Creating distribution archive: $ARCHIVE_NAME..."
 tar -czf "$OUTPUT_TAR" -C "$STAGING_DIR" .
 
 SIZE_BYTES=$(wc -c < "$OUTPUT_TAR" | tr -d ' ')
-SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1048576" | bc 2>/dev/null || echo "22")
+SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1048576" | bc 2>/dev/null || echo "80")
 SHA256=$(shasum -a 256 "$OUTPUT_TAR" | awk '{print $1}')
 
 echo "============================================================"

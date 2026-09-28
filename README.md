@@ -36,7 +36,7 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 | **`i686-pc-windows-gnu`** | Windows x86 (32-bit) | `.zip` | ~48 MB | `scripts/package.ps1 -Arch x86` |
 | **`x86_64-unknown-linux-musl`** | Linux x64 | `.tar.gz` | ~75 MB | `scripts/package-linux.sh x86_64` |
 | **`aarch64-unknown-linux-musl`**| Linux ARM64 | `.tar.gz` | ~68 MB | `scripts/package-linux.sh aarch64` |
-| **`i686-unknown-linux-musl`** | Linux x86 (32-bit) | `.tar.gz` | ~144 MB | `scripts/package-linux.sh x86` |
+| **`i686-unknown-linux-musl`** | Linux x86 (32-bit) | `.tar.gz` | ~33 MB | `scripts/package-linux.sh x86` |
 | **`aarch64-apple-darwin`** | macOS Apple Silicon | `.tar.gz` | ~131 MB | `scripts/package-macos.sh arm64` |
 | **`x86_64-apple-darwin`** | macOS Intel x64 | `.tar.gz` | ~139 MB | `scripts/package-macos.sh x64` |
 

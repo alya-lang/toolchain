@@ -74,6 +74,23 @@ if [ "${BUILD_FROM_SOURCE:-0}" = "1" ]; then
         echo 'COMMON_CONFIG += CC="gcc -static" CXX="g++ -static"' >> config.mak
         echo 'COMMON_CONFIG += CFLAGS="-g0 -Os" CXXFLAGS="-g0 -Os" LDFLAGS="-s"' >> config.mak
         make -j"$(nproc)"
+        # Libtool swallows `-static` from CC, so binutils links end up
+        # dynamic; rebuild just that tree with libtool's native `-all-static`
+        # (GCC's plain-make links cannot take `-all-static`, hence scoped).
+        # NOTE: never delete litecross stamps (obj_gcc/.lc_configured depends
+        # on obj_binutils/.lc_built, so a missing stamp retriggers a full
+        # obj_gcc reconfigure that wipes fixincludes/Makefile). `clean` keeps
+        # configure outputs, so no reconfigure can fire here.
+        BUILD_SUB="build/local/$TRIPLE"
+        if [ ! -d "$MCM_DIR/$BUILD_SUB/obj_binutils" ]; then
+            echo "Unexpected musl-cross-make layout: $BUILD_SUB/obj_binutils missing"
+            exit 1
+        fi
+        (
+            cd "$MCM_DIR/$BUILD_SUB/obj_binutils"
+            make clean > /dev/null
+            make -j"$(nproc)" 'LDFLAGS=-all-static -s' all
+        )
         make install
     )
     echo "musl-cross-make commit: $(git -C "$MCM_DIR" rev-parse --short HEAD)"

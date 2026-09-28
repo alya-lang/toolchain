@@ -10,7 +10,7 @@
       "archive": {
         "filename": "alya-toolchain-windows-x64.zip",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-x64.zip",
-        "sha256": "a6b26142fd3f19fb8a4803bbdd5cdcd4c94b13d24c478c00592679a2fba96815",
+        "sha256": "be5505ac8371420b2357742983d215ba9d6476a0d6850cc4e80cf3832d99b058",
         "compressed_size_mb": 54
       },
       "binaries": {
@@ -34,7 +34,7 @@
       "archive": {
         "filename": "alya-toolchain-windows-arm64.zip",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-arm64.zip",
-        "sha256": "7994e12055f29e516261a5a5286ce628806967834b100df798deeffec30bd8f5",
+        "sha256": "b165d7e25485f054dcdd1ec6bc47d41b2292f573db36bd95afbd813533e7a03a",
         "compressed_size_mb": 89
       },
       "binaries": {
@@ -59,7 +59,7 @@
       "archive": {
         "filename": "alya-toolchain-windows-x86.zip",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-windows-x86.zip",
-        "sha256": "878dca893d40d331de2633ec16af50732ca782989b94e25007e1c2a62924399a",
+        "sha256": "28c464d7e72e93a9a287c9eca14865bd0f8e67912f4e5f641f8a650bf627d0ee",
         "compressed_size_mb": 48
       },
       "binaries": {
@@ -83,7 +83,7 @@
       "archive": {
         "filename": "alya-toolchain-linux-x64.tar.gz",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-x64.tar.gz",
-        "sha256": "50407efced7dc94e0713242d243cc3a3645918853347245dfb765b5db1a52b0d",
+        "sha256": "4b6cd549285385d30dfa4b79334c9faeb6f8c0c1a6d28c2622c30161a2082645",
         "compressed_size_mb": 75
       },
       "binaries": {
@@ -104,7 +104,7 @@
       "archive": {
         "filename": "alya-toolchain-linux-arm64.tar.gz",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-arm64.tar.gz",
-        "sha256": "231afe93a387a6174d13046004ddd21c7417a274a7db9be5666d952e8aa2ef2b",
+        "sha256": "58bee5dcb6025de5680cb4c38987f8924c3a8f366b5e02c386a7bc0a4715ba2c",
         "compressed_size_mb": 68
       },
       "binaries": {
@@ -125,8 +125,8 @@
       "archive": {
         "filename": "alya-toolchain-linux-x86.tar.gz",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-x86.tar.gz",
-        "sha256": "e3a67d2018a3be56fd1a6a3ec10cdc388cc3cdbb20726de17f8d7511740f2d18",
-        "compressed_size_mb": 33
+        "sha256": "bea1f981ce45776e8600cb6ec9f8f0070d0ac192407cbb37fdcf3ea635612345",
+        "compressed_size_mb": 43
       },
       "binaries": {
         "gcc": "bin/gcc",
@@ -146,8 +146,8 @@
       "archive": {
         "filename": "alya-toolchain-macos-arm64.tar.gz",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-macos-arm64.tar.gz",
-        "sha256": "0806ad558e9676520adce4dbf67eef45b9c639b7f2c9eb3e0799c2bec78bc94d",
-        "compressed_size_mb": 131
+        "sha256": "57291b5b883ced984107476ef14966cc73829072e80d082131d7916eced1084b",
+        "compressed_size_mb": 77
       },
       "binaries": {
         "clang": "bin/clang",
@@ -163,8 +163,8 @@
       "archive": {
         "filename": "alya-toolchain-macos-x64.tar.gz",
         "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-macos-x64.tar.gz",
-        "sha256": "a41b0d8f49bab2e867930bb4ccb82b1eadfaef5d53e129835dafbfc3e4c6e4f6",
-        "compressed_size_mb": 139
+        "sha256": "982861a9b8dcdc3a9e2098ed00ba31f690674933995b89cee53561db46600d28",
+        "compressed_size_mb": 85
       },
       "binaries": {
         "clang": "bin/clang",

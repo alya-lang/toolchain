@@ -68,6 +68,11 @@ if [ "${BUILD_FROM_SOURCE:-0}" = "1" ]; then
         echo "TARGET = $TRIPLE" > config.mak
         echo "OUTPUT = $MCM_DIR/output" >> config.mak
         echo "GCC_CONFIG += --enable-languages=c" >> config.mak
+        # Static host binaries: deployable on any x86_64 distro regardless
+        # of host glibc (a dynamic build would lock to the build runner's
+        # glibc, e.g. GLIBC_2.38, and fail on older systems).
+        echo 'COMMON_CONFIG += CC="gcc -static" CXX="g++ -static"' >> config.mak
+        echo 'COMMON_CONFIG += CFLAGS="-g0 -Os" CXXFLAGS="-g0 -Os" LDFLAGS="-s"' >> config.mak
         make -j"$(nproc)"
         make install
     )
@@ -135,6 +140,11 @@ fi
 echo "[4/5] Stripping debug symbols from binaries..."
 if [ -f "$STAGING_DIR/bin/strip" ] && { [ "$ARCH" = "x64" ] || [ "$ARCH" = "x86" ]; }; then
     find "$STAGING_DIR/bin" -type f -exec "$STAGING_DIR/bin/strip" --strip-unneeded {} + 2>/dev/null || true
+    if [ "$ARCH" = "x86" ] && [ -d "$STAGING_DIR/libexec" ]; then
+        # Source-built toolchain keeps unstripped compiler internals (cc1);
+        # upstream prebuilts arrive stripped, so only x86 needs this pass.
+        find "$STAGING_DIR/libexec" -type f -exec "$STAGING_DIR/bin/strip" --strip-unneeded {} + 2>/dev/null || true
+    fi
 fi
 
 ARCHIVE_NAME="alya-toolchain-linux-${ARCH}.tar.gz"

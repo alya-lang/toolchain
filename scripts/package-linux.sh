@@ -31,8 +31,8 @@ elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     TRIPLE="aarch64-linux-musl"
 elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "i686" ] || [ "$ARCH" = "x32" ]; then
     ARCH="x86"
-    UPSTREAM_URL="https://musl.cc/i686-linux-musl-cross.tgz"
     TRIPLE="i686-linux-musl"
+    BUILD_FROM_SOURCE=1
 else
     echo "Unsupported architecture: $ARCH (supported: x86_64, aarch64, x86)"
     exit 1
@@ -40,14 +40,49 @@ fi
 
 UPSTREAM_TGZ="$TEMP_DIR/upstream.tgz"
 
-echo "[1/5] Downloading upstream static musl toolchain for $TRIPLE..."
-curl -fsSL --connect-timeout 20 --retry 3 --retry-delay 2 "$UPSTREAM_URL" -o "$UPSTREAM_TGZ"
+if [ "${BUILD_FROM_SOURCE:-0}" = "1" ]; then
+    # musl.cc blocks GitHub Actions IPs outright (see musl.cc news,
+    # 2025-05-27), so no prebuilt i686 upstream is reachable from CI.
+    # Build an x86_64-hosted i686-linux-musl cross toolchain from source
+    # instead; the result matches the x64/arm64 archives (fully static,
+    # C-only, musl sysroot).
+    echo "[1/5] Building i686-linux-musl toolchain from source (musl-cross-make)..."
+    MISSING_DEPS=""
+    for dep in bison flex texinfo gawk; do
+        if ! command -v "$dep" >/dev/null 2>&1; then
+            MISSING_DEPS="$MISSING_DEPS $dep"
+        fi
+    done
+    if [ -n "$MISSING_DEPS" ]; then
+        echo "Installing missing build dependencies:$MISSING_DEPS"
+        if command -v sudo >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y $MISSING_DEPS
+        else
+            apt-get update && apt-get install -y $MISSING_DEPS
+        fi
+    fi
+    MCM_DIR="$TEMP_DIR/musl-cross-make"
+    git clone --depth 1 https://github.com/richfelker/musl-cross-make.git "$MCM_DIR"
+    (
+        cd "$MCM_DIR"
+        echo "TARGET = $TRIPLE" > config.mak
+        echo "OUTPUT = $MCM_DIR/output" >> config.mak
+        echo "GCC_CONFIG += --enable-languages=c" >> config.mak
+        make -j"$(nproc)"
+        make install
+    )
+    echo "musl-cross-make commit: $(git -C "$MCM_DIR" rev-parse --short HEAD)"
+    SOURCE_ROOT="$MCM_DIR/output"
+else
+    echo "[1/5] Downloading upstream static musl toolchain for $TRIPLE..."
+    curl -fsSL --connect-timeout 20 --retry 3 --retry-delay 2 "$UPSTREAM_URL" -o "$UPSTREAM_TGZ"
 
-echo "[2/5] Extracting archive..."
-tar -xzf "$UPSTREAM_TGZ" -C "$TEMP_DIR"
-SOURCE_ROOT="$TEMP_DIR"
-if [ -d "$TEMP_DIR/${TRIPLE}-native" ]; then
-    SOURCE_ROOT="$TEMP_DIR/${TRIPLE}-native"
+    echo "[2/5] Extracting archive..."
+    tar -xzf "$UPSTREAM_TGZ" -C "$TEMP_DIR"
+    SOURCE_ROOT="$TEMP_DIR"
+    if [ -d "$TEMP_DIR/${TRIPLE}-native" ]; then
+        SOURCE_ROOT="$TEMP_DIR/${TRIPLE}-native"
+    fi
 fi
 
 STAGING_DIR="$TEMP_DIR/alya-toolchain-linux"

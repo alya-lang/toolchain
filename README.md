@@ -80,7 +80,7 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 ./scripts/package-linux.sh aarch64 1.0.0
 ./scripts/package-linux.sh x86 1.0.0
 ```
-x86 is curated from `musl.cc/i686-linux-musl-cross.tgz`; x64 runners verify it natively via IA32 emulation (static binary, `libc6-i386` installed in CI as safety).
+x86 is built from source via musl-cross-make (`TARGET=i686-linux-musl`, C-only); x64 runners verify it natively via IA32 emulation (static binary, `libc6-i386` installed in CI as safety). Prebuilt musl.cc archives are not used because musl.cc blocks GitHub Actions IPs.
 
 ### macOS (Apple Silicon / Intel)
 ```bash

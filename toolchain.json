@@ -119,6 +119,27 @@
         "dl"
       ]
     },
+    "i686-unknown-linux-musl": {
+      "os": "linux",
+      "arch": "x86",
+      "archive": {
+        "filename": "alya-toolchain-linux-x86.tar.gz",
+        "url": "https://github.com/alya-lang/toolchain/releases/download/v1.0.0/alya-toolchain-linux-x86.tar.gz",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "compressed_size_mb": 70
+      },
+      "binaries": {
+        "gcc": "bin/gcc",
+        "as": "bin/as",
+        "ld": "bin/ld"
+      },
+      "bundled_libraries": [
+        "c",
+        "m",
+        "pthread",
+        "dl"
+      ]
+    },
     "aarch64-apple-darwin": {
       "os": "macos",
       "arch": "aarch64",

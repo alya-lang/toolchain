@@ -91,7 +91,7 @@ jobs:
           path: dist/alya-toolchain-windows-x86.zip
 
   build-linux:
-    name: Linux (x64 & ARM64)
+    name: Linux (x64, ARM64 & x86)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -126,6 +126,46 @@ jobs:
           RELEASE_VER="${RELEASE_VER:-1.0.0}"
           ./scripts/package-linux.sh aarch64 "$RELEASE_VER"
 
+      - name: Build Linux x86 Toolchain
+        run: |
+          RELEASE_VER="${{ github.event.inputs.version }}"
+          if [[ "${{ github.ref_name }}" =~ ^v?([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+              RELEASE_VER="${BASH_REMATCH[1]}"
+          fi
+          RELEASE_VER="${RELEASE_VER:-1.0.0}"
+          ./scripts/package-linux.sh x86 "$RELEASE_VER"
+
+      - name: Verify Linux x86 Toolchain
+        run: |
+          sudo apt-get update && sudo apt-get install -y libc6-i386
+          mkdir -p temp_verify_x86
+          tar -xzf dist/alya-toolchain-linux-x86.tar.gz -C temp_verify_x86
+          ./temp_verify_x86/bin/gcc --version
+          echo 'int main() { return 0; }' > test.c
+          ./temp_verify_x86/bin/gcc -static test.c -o test_bin
+          ./test_bin
+          cat > test_asm.s <<'EOF'
+              .text
+              .globl main
+              .type main, %function
+          main:
+              pushl %ebp
+              movl %esp, %ebp
+              pushl $msg
+              call puts
+              addl $4, %esp
+              xorl %eax, %eax
+              popl %ebp
+              ret
+
+              .data
+          msg:
+              .string "SUCCESS: Alya Linux x86 Assembly"
+          EOF
+          ./temp_verify_x86/bin/gcc -static test_asm.s -o test_asm
+          ./test_asm | grep -q "SUCCESS"
+          rm -rf test.c test_bin test_asm.s test_asm temp_verify_x86
+
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -133,6 +173,7 @@ jobs:
           path: |
             dist/alya-toolchain-linux-x64.tar.gz
             dist/alya-toolchain-linux-arm64.tar.gz
+            dist/alya-toolchain-linux-x86.tar.gz
 
   verify-linux-arm64:
     name: Verify Linux ARM64 (native)
@@ -327,6 +368,7 @@ jobs:
               'i686-pc-windows-gnu': 'alya-toolchain-windows-x86.zip',
               'x86_64-unknown-linux-musl': 'alya-toolchain-linux-x64.tar.gz',
               'aarch64-unknown-linux-musl': 'alya-toolchain-linux-arm64.tar.gz',
+              'i686-unknown-linux-musl': 'alya-toolchain-linux-x86.tar.gz',
               'aarch64-apple-darwin': 'alya-toolchain-macos-arm64.tar.gz',
               'x86_64-apple-darwin': 'alya-toolchain-macos-x64.tar.gz'
           }
@@ -352,6 +394,7 @@ jobs:
               'i686-pc-windows-gnu': ('**Windows**', 'x86 (32-bit)', '`i686-pc-windows-gnu`'),
               'x86_64-unknown-linux-musl': ('**Linux**', 'x86_64 (x64)', '`x86_64-unknown-linux-musl`'),
               'aarch64-unknown-linux-musl': ('**Linux**', 'AArch64 (ARM64)', '`aarch64-unknown-linux-musl`'),
+              'i686-unknown-linux-musl': ('**Linux**', 'x86 (32-bit)', '`i686-unknown-linux-musl`'),
               'aarch64-apple-darwin': ('**macOS**', 'Apple Silicon (ARM64)', '`aarch64-apple-darwin`'),
               'x86_64-apple-darwin': ('**macOS**', 'Intel (x64)', '`x86_64-apple-darwin`'),
           }
@@ -373,7 +416,7 @@ jobs:
           notes += "- **Windows x64**: Curated ultra-lightweight MinGW-w64 distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, `strip.exe`, `objdump.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, `user32`, `shell32`, `advapi32`).\n"
           notes += "- **Windows ARM64**: LLVM-MinGW distribution for Windows on ARM64 with `gcc`/`clang` drivers, `as`, `ar`, `windres`, LLD linker, UCRT headers, and ARM64 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\n"
           notes += "- **Windows x86**: Curated ultra-lightweight MinGW-w64 32-bit distribution with `gcc.exe`, `as.exe`, `ld.exe`, `ar.exe`, standard C headers, and Win32 import libraries (`kernel32`, `ws2_32`, `msvcrt`, ...).\n"
-          notes += "- **Linux x64 & ARM64**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies.\n"
+          notes += "- **Linux x64, ARM64 & x86**: 100% statically-linked musl-GCC compiler suite and sysroot. Runs out-of-the-box on any Linux distribution (Ubuntu, Debian, Alpine, Fedora, Arch) without host glibc version dependencies. The x86 archive is curated from musl.cc (`i686-linux-musl`) and verified on x64 runners via IA32 emulation.\n"
           notes += "- **macOS (Apple Silicon & Intel)**: Mach-O Clang driver and tool suite with ad-hoc codesigning to comply with macOS Gatekeeper / AMFI runtime security.\n"
           notes += "- **Zero-Setup Automation**: Automatically provisioned on-demand by the `alya` compiler into `~/.alya/toolchain/` with multi-mirror fallback and SHA-256 verification.\n\n"
           notes += "### 🔒 Verification\n"
@@ -412,6 +455,7 @@ jobs:
             dist/alya-toolchain-windows-x86.zip
             dist/alya-toolchain-linux-x64.tar.gz
             dist/alya-toolchain-linux-arm64.tar.gz
+            dist/alya-toolchain-linux-x86.tar.gz
             dist/alya-toolchain-macos-arm64.tar.gz
             dist/alya-toolchain-macos-x64.tar.gz
             toolchain.json

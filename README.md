@@ -19,6 +19,7 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 │ Windows (x86)     │ MinGW-w64 Minimal  │ gcc.exe, as.exe, ld.exe (32-bit)   │
 │ Linux (x64)       │ Universal musl-GCC │ Static gcc, as, ld (no glibc lock) │
 │ Linux (ARM64)     │ Universal musl-GCC │ Static aarch64 gcc, as, ld         │
+│ Linux (x86)       │ Universal musl-GCC │ Static i686 gcc, as, ld (32-bit)   │
 │ macOS (Apple Sil) │ Darwin Clang + LLD │ Mach-O clang, ld64.lld, codesign   │
 │ macOS (Intel x64) │ Darwin Clang + LLD │ Mach-O x64 clang, ld64.lld         │
 └───────────────────┴────────────────────┴────────────────────────────────────┘
@@ -35,6 +36,7 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 | **`i686-pc-windows-gnu`** | Windows x86 (32-bit) | `.zip` | ~48 MB | `scripts/package.ps1 -Arch x86` |
 | **`x86_64-unknown-linux-musl`** | Linux x64 | `.tar.gz` | ~75 MB | `scripts/package-linux.sh x86_64` |
 | **`aarch64-unknown-linux-musl`**| Linux ARM64 | `.tar.gz` | ~68 MB | `scripts/package-linux.sh aarch64` |
+| **`i686-unknown-linux-musl`** | Linux x86 (32-bit) | `.tar.gz` | ~70 MB | `scripts/package-linux.sh x86` |
 | **`aarch64-apple-darwin`** | macOS Apple Silicon | `.tar.gz` | ~131 MB | `scripts/package-macos.sh arm64` |
 | **`x86_64-apple-darwin`** | macOS Intel x64 | `.tar.gz` | ~139 MB | `scripts/package-macos.sh x64` |
 
@@ -72,11 +74,13 @@ Standard compiler installations (MinGW-w64, full LLVM, or Xcode) often require h
 ./scripts/verify.ps1 -ToolchainPath dist/alya-toolchain-windows-x86.zip -Arch x86
 ```
 
-### Linux (x64 / ARM64)
+### Linux (x64 / ARM64 / x86)
 ```bash
 ./scripts/package-linux.sh x86_64 1.0.0
 ./scripts/package-linux.sh aarch64 1.0.0
+./scripts/package-linux.sh x86 1.0.0
 ```
+x86 is curated from `musl.cc/i686-linux-musl-cross.tgz`; x64 runners verify it natively via IA32 emulation (static binary, `libc6-i386` installed in CI as safety).
 
 ### macOS (Apple Silicon / Intel)
 ```bash

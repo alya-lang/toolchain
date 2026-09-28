@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Alya Minimal Linux Toolchain Packaging Script (x86_64 & aarch64)
-# Curates a 100% statically-linked, universal musl-GCC distribution (~16 MB)
+# Alya Minimal Linux Toolchain Packaging Script (x86_64, aarch64 & x86)
+# Curates a 100% statically-linked, universal musl-GCC distribution
 # ==============================================================================
 
 set -euo pipefail
@@ -29,8 +29,12 @@ elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     ARCH="arm64"
     UPSTREAM_URL="https://github.com/bazel-contrib/musl-toolchain/releases/download/v0.1.27/musl-1.2.3-platform-aarch64-unknown-linux-gnu-target-aarch64-linux-musl.tar.gz"
     TRIPLE="aarch64-linux-musl"
+elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "i686" ] || [ "$ARCH" = "x32" ]; then
+    ARCH="x86"
+    UPSTREAM_URL="https://musl.cc/i686-linux-musl-cross.tgz"
+    TRIPLE="i686-linux-musl"
 else
-    echo "Unsupported architecture: $ARCH (supported: x86_64, aarch64)"
+    echo "Unsupported architecture: $ARCH (supported: x86_64, aarch64, x86)"
     exit 1
 fi
 
@@ -94,7 +98,7 @@ if [ -d "$SOURCE_ROOT/$TRIPLE/lib" ]; then
 fi
 
 echo "[4/5] Stripping debug symbols from binaries..."
-if [ "$ARCH" = "x64" ] && [ -f "$STAGING_DIR/bin/strip" ]; then
+if [ -f "$STAGING_DIR/bin/strip" ] && { [ "$ARCH" = "x64" ] || [ "$ARCH" = "x86" ]; }; then
     find "$STAGING_DIR/bin" -type f -exec "$STAGING_DIR/bin/strip" --strip-unneeded {} + 2>/dev/null || true
 fi
 
